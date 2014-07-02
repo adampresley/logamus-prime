@@ -1,0 +1,13 @@
+ColdFusion OUT log file
+-----------------------
+
+LogFile := Line*
+Line := Date Whitespace+ Time Whitespace+ MessageType "[" ThreadName "]" Whitespace+ "-" Message Newline
+Date := Digit{2} "/" Digit{2}
+Time := Digit{2} ":" Digit{2} ":" Digit{2}
+MessageType := "Error" | "Info" | "Warning"
+ThreadName := [a-z\-_0-9]+
+Message: [^Newline]
+Whitespace := " " | \t
+Newline := \n | \r\n
+Digit := [0-9]+
