@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	MAX_MESSAGE_LISTENER_GOROUTINES int = 100
+	MAX_MESSAGE_LISTENER_GOROUTINES int = 20
 )
 
 func main() {
