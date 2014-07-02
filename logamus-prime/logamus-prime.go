@@ -99,5 +99,5 @@ func main() {
 	 * Fire up the HTTP listener. POSTS to the HTTP server will
 	 * send parsed messages to any message listeners setup.
 	 */
-	listener.StartHttpListener(":8080", []chan message.Message{messageChannel})
+	listener.StartHttpListener(":9095", []chan message.Message{messageChannel})
 }
