@@ -3,9 +3,9 @@ package message
 import "strconv"
 
 type StackItem struct {
-	FileName     string
-	LineNumber   int
-	FunctionName string
+	FileName     string `json:"fileName"`
+	LineNumber   int    `json:"lineNumber"`
+	FunctionName string `json:"functionName"`
 }
 
 func NewStackItem(fileName string, lineNumber int, functionName string) *StackItem {

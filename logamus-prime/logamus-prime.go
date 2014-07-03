@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"os"
 	"os/signal"
@@ -19,10 +20,17 @@ const (
 	MAX_MESSAGE_LISTENER_GOROUTINES int = 20
 )
 
+var writerName = flag.String("writer", "mysql", "Sql engine to write logs to. Valid options: mysql, mssql")
+var sqlHost = flag.String("sqlhost", "localhost", "Host for SQL server instance")
+var sqlPort = flag.Int("sqlport", 3306, "Port for SQL server instance")
+var sqlDatabase = flag.String("sqldatabase", "", "Database name")
+var sqlUserName = flag.String("sqlusername", "root", "User to connect to SQL")
+var sqlPassword = flag.String("sqlpassword", "password", "Password for SQL")
+
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
+	flag.Parse()
 
-	var err error
 	start := time.Now()
 
 	/*
@@ -46,24 +54,20 @@ func main() {
 	 * Setup a SQL writer
 	 */
 	connectionInfo := database.ConnectionInfo{
-		Host:     "localhost",
-		Port:     3306,
-		Database: "logamus",
-		UserName: "root",
-		Password: "password",
+		Host:     *sqlHost,
+		Port:     *sqlPort,
+		Database: *sqlDatabase,
+		UserName: *sqlUserName,
+		Password: *sqlPassword,
 	}
 
-	sqlWriter, err := sqlwriter.NewSqlWriter(writer.MYSQL_WRITER, connectionInfo)
-	if err != nil {
-		log.Println("Unable to setup MySQL writer:", err)
-		os.Exit(1)
-	}
+	sqlWriter := setupSqlWriter(*writerName, &connectionInfo)
 
 	/*
 	 * Start a log file listener. This will watch a directory and gobble up files,
 	 * parse them, process messages, then delete the files.
 	 */
-	go listener.StartLogFileListener(logqueue.CFOUT_LOG_TYPE, "/home/adam/temp/cflogs-temp/*.log", []writer.MessageWriter{sqlWriter})()
+	go listener.StartLogFileListener(logqueue.CFOUT_LOG_TYPE, "C:\\Temp\\logs\\*.log", []writer.MessageWriter{sqlWriter})()
 
 	/*
 	 * Setup a listener for messages that are recieved.
@@ -101,3 +105,24 @@ func main() {
 	 */
 	listener.StartHttpListener(":9095", []chan message.Message{messageChannel})
 }
+
+func setupSqlWriter(writerName string, connectionInfo *database.ConnectionInfo) writer.MessageWriter {
+	var result writer.MessageWriter
+	var err error
+
+	switch writerName {
+	case "mysql":
+		result, err = sqlwriter.NewSqlWriter(writer.MYSQL_WRITER, *connectionInfo)
+
+	case "mssql":
+		result, err = sqlwriter.NewSqlWriter(writer.MSSQL_WRITER, *connectionInfo)
+	}
+
+	if err != nil {
+		log.Println("Unable to setup SQL writer:", err)
+		os.Exit(1)
+	}
+
+	return result
+}
+

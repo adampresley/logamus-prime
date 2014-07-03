@@ -25,6 +25,12 @@ func NewSqlWriter(writerType writer.WriterType, connectionInfo database.Connecti
 		if err != nil {
 			return nil, err
 		}
+
+	case writer.MSSQL_WRITER:
+		db, err = database.ConnectMSSQL(connectionInfo)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	result = &SqlWriter{Db: db}
